@@ -1,9 +1,10 @@
 ﻿using WebAPI_Tienda.Modelos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace WebAPI_Tienda
 {
-    public class TiendaContext: DbContext
+    public class TiendaContext: IdentityDbContext
     {
         public TiendaContext(DbContextOptions<TiendaContext> options) : base(options)
         {
@@ -13,10 +14,11 @@ namespace WebAPI_Tienda
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<ConceptoPedido> ConceptosPedidos { get; set; }
 
-        /*
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //modelBuilder.Entity<Course>().ToTable("Course");
-        }*/
+            base.OnModelCreating(modelBuilder);
+            //modelBuilder.Entity<Producto>().ToTable("NuevoNombreTablaProductos"); para cambiar el nombre de la tabla
+        }
     }
 }

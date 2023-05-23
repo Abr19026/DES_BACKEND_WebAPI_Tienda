@@ -1,4 +1,6 @@
-﻿namespace WebAPI_Tienda
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace WebAPI_Tienda
 {
     public class Startup
     {
@@ -8,12 +10,18 @@
             this.Configuration = Configuration;
         }
 
-        // Provee servicios al contenedor
+        // Inyecta servicios al contenedor
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add services to the container.
+            // Abre Base de datos
+            services.AddDbContext<TiendaContext>(
+                options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
+            );
+            services.AddDatabaseDeveloperPageExceptionFilter();
+            // Agrega MVC
             services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            // Agrega Swagger
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
         }

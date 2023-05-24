@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace WebAPI_Tienda
 {
@@ -18,6 +19,8 @@ namespace WebAPI_Tienda
         // Inyecta servicios al contenedor
         public void ConfigureServices(IServiceCollection services)
         {
+            // Agrega Automapper
+            services.AddAutoMapper(typeof(Startup));
             // Abre Base de datos
             services.AddDbContext<TiendaContext>(
                 options =>
@@ -25,7 +28,9 @@ namespace WebAPI_Tienda
             );
             services.AddDatabaseDeveloperPageExceptionFilter();
             // Agrega MVC
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
+            );
             // Agrega Swagger
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(

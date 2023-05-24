@@ -36,10 +36,10 @@ namespace WebAPI_Tienda.Controllers
             return Ok();
         }
 
-        [HttpDelete("{nombre:string}")]
-        public async Task<ActionResult> Delete(string id)
+        [HttpDelete("{nombre}")]
+        public async Task<ActionResult> Delete(string nombre)
         {
-            var exist = await _context.Categorias.AnyAsync(x => x.ID == id);
+            var exist = await _context.Categorias.AnyAsync(x => x.ID == nombre);
             if (!exist)
             {
                 return NotFound("El Recurso no fue encontrado.");
@@ -47,7 +47,7 @@ namespace WebAPI_Tienda.Controllers
 
             _context.Remove(new Categoria()
             {
-                ID = id
+                ID = nombre
             });
             await _context.SaveChangesAsync();
             return Ok();

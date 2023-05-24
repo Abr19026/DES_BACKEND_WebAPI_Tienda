@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,15 +16,17 @@ namespace WebAPI_Tienda.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CuentasController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly UserManager<IdentityUser> userManager;
         private readonly IConfiguration configuracion;
         private readonly SignInManager<IdentityUser> signInManager;
 
-        public CuentasController(UserManager<IdentityUser> userManager, IConfiguration configuracion, SignInManager<IdentityUser> signInManager)
+        public CuentasController(UserManager<IdentityUser> userManager, IConfiguration configuracion, SignInManager<IdentityUser> signInManager, IMapper mapper)
         {
             this.userManager = userManager;
             this.configuracion = configuracion;
             this.signInManager = signInManager;
+            this._mapper = mapper;
         }
 
         [AllowAnonymous]
@@ -36,7 +39,7 @@ namespace WebAPI_Tienda.Controllers
             if (result.Succeeded)
             {
                 // Retorna el JWT
-                return ConstruirToken(credenciales);
+                return await ConstruirToken(credenciales);
             }
             else
             {
@@ -57,7 +60,7 @@ namespace WebAPI_Tienda.Controllers
             if (result.Succeeded)
             {
                 // Retorna el JWT
-                return ConstruirToken(credenciales);
+                return await ConstruirToken(credenciales);
             }
             else
             {
@@ -66,8 +69,17 @@ namespace WebAPI_Tienda.Controllers
         }
 
         [Authorize(Policy = "RequiereAdmin")]
-        [HttpPost("ElevarPrivilegios")]
-        private async Task<ActionResult> AgregarAdmin(EditarAdminDTO admindto)
+        [HttpGet("admins")]
+        public async Task<ActionResult<List<GetUserDTO>>> GetAdmins()
+        {
+            var admins = await userManager.GetUsersForClaimAsync(new Claim("esAdmin", "1"));
+            return admins.Select(user => _mapper.Map<GetUserDTO>(user)).ToList();
+        }
+
+
+        //[Authorize(Policy = "RequiereAdmin")]
+        [HttpPost("admins")]
+        public async Task<ActionResult> AgregarAdmin(EditarAdminDTO admindto)
         {
             var usuario = await userManager.FindByEmailAsync(admindto.Email);
             await userManager.AddClaimAsync(usuario, new Claim("esAdmin", "1"));
@@ -75,24 +87,32 @@ namespace WebAPI_Tienda.Controllers
         }
 
         [Authorize(Policy = "RequiereAdmin")]
-        [HttpPost("QuitarPrivilegios")]
-        private async Task<ActionResult> QuitarAdmin(EditarAdminDTO admindto)
+        [HttpDelete("admins")]
+        public async Task<ActionResult> QuitarAdmin(EditarAdminDTO admindto)
         {
             var usuario = await userManager.FindByEmailAsync(admindto.Email);
             await userManager.RemoveClaimAsync(usuario, new Claim("esAdmin", "1"));
             return Ok();
         }
 
-        private RespuestaAutenticacion ConstruirToken(CredencialesUsuario credenciales)
+        // Solo llamar después de que se haya ingresado exitosamente
+        private async Task<RespuestaAutenticacion> ConstruirToken(CredencialesUsuario credenciales)
         {
             // Claims son información del cliente en la cual podemos confiar
             // No deben contener info sensible como contraseñas o tarjetas de crédito
+            
+            var usuario = await userManager.FindByEmailAsync(credenciales.Email);
+            var claimsDB = await userManager.GetClaimsAsync(usuario);
+
             var claims = new List<Claim>
             {
-                new Claim("email", credenciales.Email)
-                //new Claim("otroClaim", "abdcsdfse")
+                new Claim("email", credenciales.Email),
+                new Claim("userId", usuario.Id)
             };
+            // Agrega Claims de la base de datos (Tiene que Entrar de nuevo para actualizarse)
+            claims.AddRange(claimsDB);
 
+            // Crea respuesta autenticación
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuracion["keyJWT"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expiration = DateTime.Now.AddHours(1); // Debe ser minutos o segundos

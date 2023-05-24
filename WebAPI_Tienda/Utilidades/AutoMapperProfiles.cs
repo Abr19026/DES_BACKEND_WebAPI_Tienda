@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using WebAPI_Tienda.DTOs;
 using WebAPI_Tienda.Modelos;
 
@@ -8,13 +9,15 @@ namespace WebAPI_Tienda.Utilidades
     {
         public AutoMapperProfiles()
         {
-            //Productos
+            // Usuarios
+            CreateMap<IdentityUser, GetUserDTO>();
+            // Productos
             CreateMap<Producto, GetProductoDTO>();
             CreateMap<PostProductoDTO, Producto>().ForMember(
                 dest => dest.Categorias,
                 opt => opt.MapFrom(mf => new List<Categoria>() ));
             CreateMap<IFormFile, byte[]>().ConvertUsing<IFormFileTypeConverter>();
-            //Categorías
+            // Categorías
             CreateMap<Categoria, GetCategoriaDTO>();
             CreateMap<PostCategoriaDTO, Categoria>();
         }

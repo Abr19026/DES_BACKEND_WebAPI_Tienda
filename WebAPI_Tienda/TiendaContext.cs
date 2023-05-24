@@ -17,7 +17,11 @@ namespace WebAPI_Tienda
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Agrega tablas de autenticación
             base.OnModelCreating(modelBuilder);
+            // Marca llave compuesta de ConceptoPedido
+            modelBuilder.Entity<ConceptoPedido>()
+                .HasKey(c => new { c.ProductoID, c.PedidoID });
             //modelBuilder.Entity<Producto>().ToTable("NuevoNombreTablaProductos"); para cambiar el nombre de la tabla
         }
     }

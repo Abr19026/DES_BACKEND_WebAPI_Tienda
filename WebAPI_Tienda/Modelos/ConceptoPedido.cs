@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace WebAPI_Tienda.Modelos
 {
-    [PrimaryKey(nameof(ProductoID), nameof(PedidoID))]
+    // Llave compuesta ProductoID,PedidoID
     public class ConceptoPedido
     {
         [Required]

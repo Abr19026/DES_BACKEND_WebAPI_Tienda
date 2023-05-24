@@ -12,7 +12,7 @@ namespace WebAPI_Tienda.Controllers
 {
     [ApiController]
     [Route("api/productos")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]//, Policy = "EsAdmin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ProductosController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -50,10 +50,9 @@ namespace WebAPI_Tienda.Controllers
             {
                 return File(new byte[0], "image/*");
             }
-            
+
         }
 
-        //[AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult> Post([FromForm] PostProductoDTO productodto)
         {
@@ -77,7 +76,37 @@ namespace WebAPI_Tienda.Controllers
             return Ok();
         }
 
-        //[AllowAnonymous]
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> put(int id, [FromForm] PostProductoDTO productodto)
+        {
+            var exist = await _context.Productos.AnyAsync(x => x.Id == id);
+            if (!exist)
+            {
+                return NotFound();
+            }
+
+            // crear producto y guardar foto
+            var producto = _mapper.Map<Producto>(productodto);
+            producto.Id = id;
+            // Agrega categorias del producto (Si no existe manda error)
+            foreach (var IdCat in productodto.IdsDeCategorias)
+            {
+                var cat = await _context.Categorias.FirstOrDefaultAsync(x => x.ID == IdCat);
+                if (cat != null)
+                {
+                    producto.Categorias.Add(cat);
+                }
+                else
+                {
+                    return NotFound($"La categoría <<{IdCat}>> no existe");
+                }
+            }
+            // Agrega producto a la base de datos
+            _context.Update(producto);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {

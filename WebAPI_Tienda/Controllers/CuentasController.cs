@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,6 +12,7 @@ namespace WebAPI_Tienda.Controllers
 {
     [ApiController]
     [Route("cuentas")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CuentasController : ControllerBase
     {
         private readonly UserManager<IdentityUser> userManager;
@@ -23,6 +26,7 @@ namespace WebAPI_Tienda.Controllers
             this.signInManager = signInManager;
         }
 
+        [AllowAnonymous]
         [HttpPost("registro")]
         public async Task<ActionResult<RespuestaAutenticacion>> Registrar(CredencialesUsuario credenciales)
         {
@@ -40,6 +44,7 @@ namespace WebAPI_Tienda.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<ActionResult<RespuestaAutenticacion>> Login(CredencialesUsuario credenciales)
         {
@@ -60,6 +65,24 @@ namespace WebAPI_Tienda.Controllers
             }
         }
 
+        [Authorize(Policy = "RequiereAdmin")]
+        [HttpPost("ElevarPrivilegios")]
+        private async Task<ActionResult> AgregarAdmin(EditarAdminDTO admindto)
+        {
+            var usuario = await userManager.FindByEmailAsync(admindto.Email);
+            await userManager.AddClaimAsync(usuario, new Claim("esAdmin", "1"));
+            return Ok();
+        }
+
+        [Authorize(Policy = "RequiereAdmin")]
+        [HttpPost("QuitarPrivilegios")]
+        private async Task<ActionResult> QuitarAdmin(EditarAdminDTO admindto)
+        {
+            var usuario = await userManager.FindByEmailAsync(admindto.Email);
+            await userManager.RemoveClaimAsync(usuario, new Claim("esAdmin", "1"));
+            return Ok();
+        }
+
         private RespuestaAutenticacion ConstruirToken(CredencialesUsuario credenciales)
         {
             // Claims son información del cliente en la cual podemos confiar
@@ -72,7 +95,7 @@ namespace WebAPI_Tienda.Controllers
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuracion["keyJWT"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expiration = DateTime.Now.AddYears(1); // Debe ser minutos o segundos
+            var expiration = DateTime.Now.AddHours(1); // Debe ser minutos o segundos
             var securityToken = new JwtSecurityToken(issuer: null, audience: null, claims: claims, signingCredentials: creds, expires: expiration);
 
             return new RespuestaAutenticacion()

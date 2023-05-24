@@ -36,6 +36,7 @@ namespace WebAPI_Tienda
             services.AddSwaggerGen(
                 c =>
                 {
+                    // Agrega autorización a swagger
                     c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPI_Tienda", Version = "v1" });
                     // Agrega autorización a Swagger
                     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -82,6 +83,22 @@ namespace WebAPI_Tienda
             services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<TiendaContext>()
                 .AddDefaultTokenProviders();
+
+            // Agrega políticas de autorización
+            services.AddAuthorization(opciones =>
+            {
+                opciones.AddPolicy("RequiereAdmin", politica => politica.RequireClaim("esAdmin"));
+            });
+
+            //Agrega CORS (Cross Origin Resource Sharing)
+            services.AddCors(opciones =>
+            {
+                opciones.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("https://apirequest.io").AllowAnyMethod().AllowAnyHeader();
+                    //builder.WithOrigins("https://google.com").AllowAnyMethod().AllowAnyHeader();
+                });
+            });
         }
 
         // Middleware

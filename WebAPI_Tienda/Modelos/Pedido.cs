@@ -10,11 +10,19 @@ namespace WebAPI_Tienda.Modelos
         [Required]
         public string UserID { get; set; }
         [Required]
-        public bool Confirmado { get; set; }    // Indica que hay un pago, si no hay pago es un "carrito"
+        public EstadoPedido Estado { get; set; }    // Indica que hay un pago, si no hay pago es un "carrito"
+        public float Total { get; set; }
         // Propiedades de navegación
         public Pago Pago { get; set; }
         public DatosEnvio Envio { get; set; }
         public IdentityUser User { get; set; }
         public ICollection<ConceptoPedido> ConceptosPedido { get; set; }
+    }
+
+    public enum EstadoPedido { 
+        EnCarrito,
+        ConfirmacionPendiente,
+        Confirmado,
+        Cancelado
     }
 }

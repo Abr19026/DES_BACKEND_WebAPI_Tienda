@@ -4,6 +4,8 @@
     {
         public int Cantidad { get; set; }
         // Propiedades de navegación
-        public GetResumenProdutcoDTO Producto { get; set; }        
+        public GetProductoPedidoDTO Producto { get; set; }
+        public float PrecioUnitario { get; set; }
+        public string EstadoEntrega { get; set; }
     }
 }

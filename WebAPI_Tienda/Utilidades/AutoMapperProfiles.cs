@@ -13,13 +13,22 @@ namespace WebAPI_Tienda.Utilidades
             CreateMap<Pedido, GetCarritoResumenDTO>();
             CreateMap<ConceptoPedido, GetConceptoCarritoDTO>();
             CreateMap<Producto, GetResumenProdutcoDTO>();
+            // DTO Pago y Envío
+            CreateMap<Pago, GetPagoDTO>();
+            CreateMap<DatosEnvio, GetDatosEnvioDTO>();
+            CreateMap<PostPagoDTO, Pago>();
+            CreateMap<DatosEnvioDTO, DatosEnvio>();
+            // DTO Pedido
+            CreateMap<Pedido, GetPedidoDTO>();
+            CreateMap<ConceptoPedido, GetConceptodPedidoDTO>();
+            CreateMap<Producto, GetProductoPedidoDTO>();
             // Usuarios
             CreateMap<IdentityUser, GetUserDTO>();
             // Productos
             CreateMap<Producto, GetProductoDTO>();
             CreateMap<PostProductoDTO, Producto>().ForMember(
                 dest => dest.Categorias,
-                opt => opt.MapFrom(mf => new List<Categoria>() ));
+                opt => opt.MapFrom(mf => new List<Categoria>()));
             CreateMap<IFormFile, byte[]>().ConvertUsing<IFormFileTypeConverter>();
             // Categorías
             CreateMap<Categoria, GetCategoriaDTO>();

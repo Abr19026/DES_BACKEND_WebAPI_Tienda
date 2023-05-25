@@ -19,9 +19,19 @@ namespace WebAPI_Tienda.Utilidades
             CreateMap<PostPagoDTO, Pago>();
             CreateMap<DatosEnvioDTO, DatosEnvio>();
             // DTO Pedido
-            CreateMap<Pedido, GetPedidoDTO>();
+            CreateMap<Pedido, GetPedidoDTO>().ForMember(
+                dest => dest.Estado,
+                opt => opt.MapFrom(mf => mf.Estado.ToString())
+                );
             CreateMap<ConceptoPedido, GetConceptodPedidoDTO>();
             CreateMap<Producto, GetProductoPedidoDTO>();
+            CreateMap<ConceptoPedido, ConceptoPedidoEstadoDTO>().ForMember(
+                    dest => dest.EstadoEnvio,
+                    opt => opt.MapFrom(mf => mf.EstadoEntrega.ToString())
+                ).ForMember(
+                    dest => dest.NombreProducto,
+                    opt => opt.MapFrom(mf=>mf.Producto.Nombre)
+                );
             // Usuarios
             CreateMap<IdentityUser, GetUserDTO>();
             // Productos

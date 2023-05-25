@@ -139,10 +139,8 @@ namespace WebAPI_Tienda.Controllers
             }
 
             // confirma que las existencias estén en los límites
-            var productos_sobrestock = await _context.ConceptosPedidos
-                    .Include(concepto => concepto.Producto)
-                    .Where(concepto => concepto.Cantidad > concepto.Producto.Existencias)
-                    .ToListAsync();
+            var productos_sobrestock = pedido_valido.ConceptosPedido
+                                      .Where(concepto => concepto.Cantidad > concepto.Producto.Existencias).ToList();
             if (productos_sobrestock.Count > 0)
             {
                 var prods_sobrestock_mensaje = "";

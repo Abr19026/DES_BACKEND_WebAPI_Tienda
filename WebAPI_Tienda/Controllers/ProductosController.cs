@@ -77,7 +77,7 @@ namespace WebAPI_Tienda.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> put(int id, [FromForm] PostProductoDTO productodto)
+        public async Task<ActionResult> Put(int id, [FromForm] PostProductoDTO productodto)
         {
             var exist = await _context.Productos.AnyAsync(x => x.Id == id);
             if (!exist)

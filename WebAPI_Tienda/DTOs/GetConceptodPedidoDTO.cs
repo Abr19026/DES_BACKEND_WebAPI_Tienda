@@ -4,6 +4,6 @@
     {
         public int Cantidad { get; set; }
         public float PrecioUnitario { get; set; }
-        public GetResumenProdutcoDTO Producto { get; set; }
+        public GetProductoPedidoDTO Producto { get; set; }
     }
 }

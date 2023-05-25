@@ -20,9 +20,9 @@ namespace WebAPI_Tienda.Modelos
     }
 
     public enum EstadoPedido { 
-        EnCarrito,
-        ConfirmacionPendiente,
-        Confirmado,
-        Cancelado
+        EnCarrito,  //Indica que el pedido es un carrito
+        ConfirmacionPendiente,  // Indica que inició proceso de pago
+        Confirmado, // Indica que terminó proceso de pago
+        Cancelado   //Indica que se canceló
     }
 }

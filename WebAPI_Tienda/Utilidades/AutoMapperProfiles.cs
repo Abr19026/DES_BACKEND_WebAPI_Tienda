@@ -9,6 +9,10 @@ namespace WebAPI_Tienda.Utilidades
     {
         public AutoMapperProfiles()
         {
+            // DTOs carrito
+            CreateMap<Pedido, GetCarritoResumenDTO>();
+            CreateMap<ConceptoPedido, GetConceptoCarritoDTO>();
+            CreateMap<Producto, GetResumenProdutcoDTO>();
             // Usuarios
             CreateMap<IdentityUser, GetUserDTO>();
             // Productos

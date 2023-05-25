@@ -13,9 +13,8 @@ namespace WebAPI_Tienda.Modelos
         [Required]
         public int Cantidad { get; set; }
         [Required]
-        public float PrecioUnitario { get; set; }
-        [Required]
         public EstadoEntrega EstadoEntrega { get; set; }
+        public float PrecioUnitario { get; set; }
         // Propiedades de navegación
         public Producto Producto { get; set; }
         public Pedido Pedido { get; set; }        

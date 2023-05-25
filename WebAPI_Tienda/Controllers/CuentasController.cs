@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -27,6 +28,13 @@ namespace WebAPI_Tienda.Controllers
             this.configuracion = configuracion;
             this.signInManager = signInManager;
             this._mapper = mapper;
+        }
+
+        [Authorize(Policy = "RequiereAdmin")]
+        [HttpGet]
+        public async Task<ActionResult<List<GetUserDTO>>> GetUsuarios()
+        {
+            return await userManager.Users.Select(user=> _mapper.Map<GetUserDTO>(user)).ToListAsync();
         }
 
         [AllowAnonymous]
@@ -77,7 +85,7 @@ namespace WebAPI_Tienda.Controllers
         }
 
 
-        //[Authorize(Policy = "RequiereAdmin")]
+        [Authorize(Policy = "RequiereAdmin")]
         [HttpPost("admins")]
         public async Task<ActionResult> AgregarAdmin(EditarAdminDTO admindto)
         {

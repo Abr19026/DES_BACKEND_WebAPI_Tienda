@@ -91,8 +91,8 @@ namespace WebAPI_Tienda.Controllers
             return carro;
         }
 
-        [HttpPost("{carritoId:int}/productos")]
-        public async Task<ActionResult> agregarProductoCarrito([Required] int productoId, int carritoId, [Required] int cantidad)
+        [HttpPut("{carritoId:int}/productos")]
+        public async Task<ActionResult> PutProductoCarrito([Required] int productoId, int carritoId, [Required] int cantidad)
         {
             // Validación
             if (cantidad < 1)
@@ -123,13 +123,21 @@ namespace WebAPI_Tienda.Controllers
             {
                 return NotFound("Producto no existe");
             }
+
+            var local = carrito.ConceptosPedido.FirstOrDefault(
+                concepto => 
+                    concepto.PedidoID == carritoId &&
+                    concepto.ProductoID == productoId);
+
+            local ??= new ConceptoPedido()
+                {
+                    Producto = producto,
+                    Pedido = carrito,
+                };
+            local.Cantidad = cantidad;
+
             // Agrega un concepto con ese producto al carrito
-            carrito.ConceptosPedido.Add(new ConceptoPedido()
-            {
-                Producto = producto,
-                Pedido = carrito,
-                Cantidad = cantidad,
-            });
+            carrito.ConceptosPedido.Add(local);
 
             _context.Update(carrito);
             await _context.SaveChangesAsync();
@@ -160,73 +168,6 @@ namespace WebAPI_Tienda.Controllers
             _context.Remove(conceptoCarrito);
             await _context.SaveChangesAsync();
             return Ok();
-        }
-
-        [HttpGet("transaccion")]
-        public async Task<ActionResult<List<GetPedidoDTO>>> GetPagosPendientes()
-        {
-            var userId = HttpContext.User.Claims.
-                        Where(claim => claim.Type == "userId").
-                        FirstOrDefault().Value;
-
-            var pedidos_pendientes = await _context.Pedidos
-                .Where(pedido =>
-                       pedido.UserID == userId &&
-                       pedido.Estado == EstadoPedido.ConfirmacionPendiente)
-                    .Include(pedido => pedido.Pago)
-                    .Include(pedido=> pedido.Envio)
-                    .Include(pedido => pedido.ConceptosPedido)
-                    .ThenInclude(concepto => concepto.Producto)
-                    .Select(pedido=> _mapper.Map<GetPedidoDTO>(pedido))
-                .ToListAsync();
-
-            return pedidos_pendientes;
-        }
-
-        [HttpPost("transaccion/{carritoid:int}")]
-        public async Task<ActionResult<GetPedidoDTO>> iniciarPago([Required]PostTransaccionDTO datostransaccion ,int carritoid)
-        {
-            // Valida autorización y existencia
-            var userId = HttpContext.User.Claims.
-                        Where(claim => claim.Type == "userId").
-                        FirstOrDefault().Value;
-            var pedido_valido = await _context.Pedidos
-                .Where(pedido => pedido.ID == carritoid &&
-                       pedido.UserID == userId &&
-                       pedido.Estado == EstadoPedido.EnCarrito)
-                    .Include(pedido => pedido.ConceptosPedido)
-                    .ThenInclude(concepto => concepto.Producto)
-                .FirstOrDefaultAsync();
-            if (pedido_valido == null)
-            {
-                return NotFound();
-            }
-            // Guarda y valida datos de envio
-            var datosEnv = _mapper.Map<DatosEnvio>(datostransaccion.envio);
-            datosEnv.PedidoID = carritoid;
-            // Guarda y valida datos de pago
-            var datosPago = _mapper.Map<Pago>(datostransaccion.pago);
-            datosPago.PedidoID = carritoid;
-            datosPago.FechaPago = DateTime.Now;
-            // Crea Pedido
-            pedido_valido.Estado = EstadoPedido.ConfirmacionPendiente;
-            pedido_valido.Pago = datosPago;
-            pedido_valido.Envio = datosEnv;
-
-            float costo_total = 0;
-            foreach(var concepProd in pedido_valido.ConceptosPedido)
-            {
-                concepProd.PrecioUnitario = concepProd.Producto.Precio;
-                costo_total += concepProd.PrecioUnitario * concepProd.Cantidad;
-            }
-            pedido_valido.Total = costo_total;
-            _context.Update(pedido_valido);
-            await _context.SaveChangesAsync();
-
-            // Retorna datos dados
-            var pedido_retorno = _mapper.Map<GetPedidoDTO>(pedido_valido);
-            pedido_retorno.Total = costo_total;
-            return pedido_retorno;
         }
     }
 }

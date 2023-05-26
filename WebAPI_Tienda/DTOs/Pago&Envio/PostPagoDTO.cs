@@ -8,10 +8,11 @@ namespace WebAPI_Tienda.DTOs
         [CreditCard]
         public string NumeroTarjeta { get; set; }
         [Required]
-        [Range(0,12)]
-        public int YYExpiracion { get; set; }
-        [Required]
         [Range(1900, 9999)]
+        public int YYExpiracion { get; set; }
+        [Range(0, 12)]
+        [Required]
+        
         public int MMExpiracion { get; set; }
     }
 }

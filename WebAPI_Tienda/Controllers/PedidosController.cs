@@ -78,7 +78,10 @@ namespace WebAPI_Tienda.Controllers
                 .ConceptosPedidos
                 .Include(concepto => concepto.Pedido)
                 .Where(conceptopedido =>
-                       conceptopedido.EstadoEntrega == EstadoEntrega.Despachando &&
+                       (
+                        conceptopedido.EstadoEntrega == EstadoEntrega.Enviando ||
+                        conceptopedido.EstadoEntrega == EstadoEntrega.Despachando 
+                       ) &&
                        conceptopedido.Pedido.Estado == EstadoPedido.Confirmado
                 )
                 .Include(concepto => concepto.Producto)

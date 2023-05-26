@@ -16,9 +16,11 @@ namespace WebAPI_Tienda.Controllers
     {
         private readonly IMapper _mapper;
         private readonly TiendaContext _context;
-        public TransaccionController(TiendaContext context, IMapper mapper) { 
+        private readonly ILogger<TransaccionController> _logger;
+        public TransaccionController(TiendaContext context, IMapper mapper, ILogger<TransaccionController> logger) { 
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -116,6 +118,7 @@ namespace WebAPI_Tienda.Controllers
             _context.Remove(pedido_valido.Pago);
             _context.Remove(pedido_valido.Envio);
             await _context.SaveChangesAsync();
+            _logger.LogInformation($"Pedido {pedido_valido.ID} cancelado");
             return Ok();
         }
 
@@ -161,6 +164,7 @@ namespace WebAPI_Tienda.Controllers
 
             _context.Update(pedido_valido);
             await _context.SaveChangesAsync();
+            _logger.LogInformation($"Pedido {pedido_valido.ID} confirmado");
             return Ok();
         }
     }

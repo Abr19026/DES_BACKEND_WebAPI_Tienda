@@ -16,11 +16,13 @@ namespace WebAPI_Tienda.Controllers
     {
         private readonly IMapper _mapper;
         private readonly TiendaContext _context;
+        private readonly ILogger<PedidosController> _logger;
 
-        public PedidosController(TiendaContext context, IMapper mapper)
+        public PedidosController(TiendaContext context, IMapper mapper, ILogger<PedidosController> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
         [HttpGet]
         public async Task<ActionResult<List<GetPedidoDTO>>> GetHistorial() {
@@ -91,11 +93,11 @@ namespace WebAPI_Tienda.Controllers
 
         [Authorize(Policy = "RequiereAdmin")]
         [HttpPost("pendientes")]
-        public async Task<ActionResult> CambiarEstadoConcepto([Required] int pedidoid, [Required] int productoid, [Required] EstadoEntrega nuevo_estado)
+        public async Task<ActionResult> CambiarEstadoConcepto(CambiarEstadoConceptoDTO datos)
         {
             var concepto = await _context
                 .ConceptosPedidos
-                .Where(concepto => concepto.ProductoID == productoid && concepto.PedidoID == pedidoid)
+                .Where(concepto => concepto.ProductoID == datos.productoid && concepto.PedidoID == datos.pedidoid)
                 .Include(concepto => concepto.Pedido)
                 .FirstOrDefaultAsync();
             if (concepto == null)
@@ -106,10 +108,11 @@ namespace WebAPI_Tienda.Controllers
             {
                 return BadRequest("Este concepto es de un pedido cancelado o no confirmado");
             }
-            concepto.EstadoEntrega = nuevo_estado;
+            concepto.EstadoEntrega = Enum.Parse<EstadoEntrega>(datos.nuevo_estado, true);
             _context.Update(concepto);
             await _context.SaveChangesAsync();
             //enviar correo
+            _logger.LogInformation($"Cambio estado concepto [Pedido: {datos.pedidoid} Producto:{datos.productoid}] a: {datos.nuevo_estado}");
             return Ok();
         }
 

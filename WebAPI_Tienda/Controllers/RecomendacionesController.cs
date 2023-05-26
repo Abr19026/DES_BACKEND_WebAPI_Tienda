@@ -28,8 +28,9 @@ namespace WebAPI_Tienda.Controllers
         public async Task<ActionResult<List<GetProductoDTO>>> ObtenerRecomendaciones()
         {
             // Obtener el usuario actual o su identificador
-            var userId = User.Identity.Name;
-
+            var userId = HttpContext.User.Claims.
+                        Where(claim => claim.Type == "userId").
+                        FirstOrDefault().Value;
             // Obtener la categoría más frecuente de compras del usuario
             var categoriaMasFrecuente = await _context.ConceptosPedidos
                 .Include(cp => cp.Pedido)
